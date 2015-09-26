@@ -2,12 +2,15 @@ package main
 
 import "log"
 
-type Track struct {
-	Title      string `json:"title"`
-	Artist     string `json:"artist"`
-	Rank       int    `json:"rank"`
-	SpotifyUri string `json:"spotifyUri,omitempty"`
-}
+type (
+	Track struct {
+		Title      string `json:"title"`
+		Artist     string `json:"artist"`
+		Rank       int    `json:"rank"`
+		SpotifyUri string `json:"spotifyUri,omitempty"`
+	}
+	Tracks []Track
+)
 
 func NewTrack(item Entry, url string) Track {
 	return Track{
@@ -18,8 +21,8 @@ func NewTrack(item Entry, url string) Track {
 	}
 }
 
-func getHot10() []Track {
-	tracks := make([]Track, 0)
+func getHot10() Tracks {
+	tracks := make(Tracks, 0)
 
 	feed, err := billboard()
 	if err != nil {
@@ -27,14 +30,34 @@ func getHot10() []Track {
 		return tracks
 	}
 
-	max := 10
-	if len(feed.Items) < 10 {
-		max = len(feed.Items)
+	size := 10
+	if len(feed.Items) < size {
+		size = len(feed.Items)
 	}
 
-	for _, item := range feed.Items[:max] {
-		url := previewUrl(item.Title, item.Artist)
-		tracks = append(tracks, NewTrack(item, url))
+	input := make(chan Entry, size)
+	output := make(chan Track, size)
+
+	for i := 0; i < 2; i++ {
+		go worker(input, output)
 	}
+
+	for _, item := range feed.Items[:size] {
+		input <- item
+	}
+	close(input)
+
+	for i := 0; i < size; i++ {
+		tracks = append(tracks, <-output)
+	}
+	close(output)
+
 	return tracks
+}
+
+func worker(input <-chan Entry, output chan<- Track) {
+	for item := range input {
+		url := previewUrl(item.Title, item.Artist)
+		output <- NewTrack(item, url)
+	}
 }
