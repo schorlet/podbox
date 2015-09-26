@@ -1,6 +1,9 @@
 package main
 
-import "log"
+import (
+	"log"
+	"sort"
+)
 
 type (
 	Track struct {
@@ -19,6 +22,16 @@ func NewTrack(item Entry, url string) Track {
 		Rank:       item.Rank,
 		SpotifyUri: url,
 	}
+}
+
+func (ts Tracks) Len() int {
+	return len(ts)
+}
+func (ts Tracks) Swap(i, j int) {
+	ts[i], ts[j] = ts[j], ts[i]
+}
+func (ts Tracks) Less(i, j int) bool {
+	return ts[i].Rank < ts[j].Rank
 }
 
 func getHot10() Tracks {
@@ -52,6 +65,7 @@ func getHot10() Tracks {
 	}
 	close(output)
 
+	sort.Sort(tracks)
 	return tracks
 }
 
