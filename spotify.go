@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -22,6 +23,7 @@ type (
 func previewUrl(track, artist string) string {
 	res, err := search(track, artist)
 	if err != nil {
+		log.Println(err)
 		return ""
 	}
 

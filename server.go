@@ -23,6 +23,5 @@ func static(w http.ResponseWriter, r *http.Request) {
 func charts(w http.ResponseWriter, r *http.Request) {
 	tracks := getHot10()
 	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.Encode(tracks)
+	json.NewEncoder(w).Encode(tracks)
 }

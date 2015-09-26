@@ -8,7 +8,6 @@ import (
 
 type (
 	Feed struct {
-		// XMLName xml.Name `xml:"rss"`
 		Items []Entry `xml:"channel>item"`
 	}
 
